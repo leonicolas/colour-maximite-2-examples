@@ -1,23 +1,22 @@
 option explicit
 option base 0
 
-const HALF_H=mm.hres/2
-const HALF_V=mm.vres/2
+dim ORIGIN(2)=(mm.hres/2,mm.vres/2,-500)
 const PROPORTION=mm.vres/mm.hres
+const PROJECTION_PLANE=-300
 
 Main()
 
 sub Main
-  local float theta, q(4)
-  ' 
-  local float points(2,4)=(-100,-100,-50, 100,-100,-50, 100,100,-50, -100,100,-50, -100,-100,-50)
-  local integer i
+  local float q(4)
+  'local float points(2,4)=(-100,-100,-100, 100,-100,-100, 100,100,-100, -100,100,-100, -100,-100,-100)
+  local float points(2,15)
+  loadPoints(points())
 
-  ' Rotation angle
-  theta=rad(1)
-  ' Quaternion        X,Y,Z axis for rotation
-  math q_create theta,1,0,0,q()
+  ' Create quaternion  X,Y,Z axis for rotation
+  math q_create rad(0.5),1,1,0,q()
 
+  cls
   do
     ProjectPoints(points(),rgb(black))
     Rotate(points(),q())
@@ -54,12 +53,12 @@ sub ProjectPoints(points() as float, color as float)
   local float x1,x2,y1,y2,z1,z2
 
   for i=0 to bound(points(),2)-1
-    x1=points(0,i)*proportion+HALF_H
-    y1=points(1,i)+HALF_V
-    z1=points(2,i)
-    x2=points(0,i+1)*proportion+HALF_H
-    y2=points(1,i+1)+HALF_V
-    z2=points(2,i+1)
+    z1=points(2,i)+ORIGIN(2)
+    x1=points(0,i)*PROJECTION_PLANE/-z1*PROPORTION+ORIGIN(0)
+    y1=points(1,i)*PROJECTION_PLANE/-z1+ORIGIN(1)
+    z2=points(2,i+1)+ORIGIN(2)
+    x2=points(0,i+1)*PROJECTION_PLANE/-z2*PROPORTION+ORIGIN(0)
+    y2=points(1,i+1)*PROJECTION_PLANE/-z2+ORIGIN(1)
     line x1,y1, x2,y2, 1,color
 
     'print @(0,545) "i: "+str$(i)
@@ -71,3 +70,30 @@ end sub
 sub Print3dPoint(x%,y%,points!(),index%)
   print @(x%,y%) "x: "+str$(points!(0,index%))+", y: "+str$(points!(1,index%))+", z: "+str$(points!(2,index%))+space$(10)
 end sub
+
+sub LoadPoints(points() as float)
+  local integer i,axis
+  for i=0 to bound(points(),2)
+    for axis=0 to bound(points(),1)
+      read points(axis,i)
+    next axis
+  next i
+end sub
+
+data -100,-100,100
+data 100,-100,100
+data 100,100,100
+data -100,100,100
+data -100,100,-100
+data -100,-100,-100
+data -100,-100,100
+data -100,100,100
+data -100,100,-100
+data 100,100,-100
+data 100,-100,-100
+data 100,-100,100
+data 100,100,100
+data 100,100,-100
+data 100,-100,-100
+data -100,-100,-100
+
